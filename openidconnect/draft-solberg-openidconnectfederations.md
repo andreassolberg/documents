@@ -15,15 +15,6 @@ The reason why I even bother to think about this is that I think it is really pi
 *Disclaimer: My experiences from the OpenID and OAuth world are limited. Writing this document is my way of getting to know the OpenID Connect idea better.*
 
 
-Important:
-
-* Re-introduce some crypto in OAuth.
-* Add federation as a layer on top of OAuth 2.0, without modifying anything on the base layer. This will ensure simple deployment of Consumers that would like to both connect to federations and open providers.
-* Keep it simple.
-* Central component needs to be super light weight.
-
-
-
 Useful references:
 
 * OpenID Connect: <http://openidconnect.com/>
@@ -316,6 +307,15 @@ TODO List:
 * Automatic exchange of bi-lateral trust relationships within the federation.
 * Automated negotiation of attribute release
 
+
+
+
+Important:
+
+* Re-introduce some crypto in OAuth.
+* Add federation as a layer on top of OAuth 2.0, without modifying anything on the base layer. This will ensure simple deployment of Consumers that would like to both connect to federations and open providers.
+* Keep it simple.
+* Central component needs to be super light weight.
 
 
 
