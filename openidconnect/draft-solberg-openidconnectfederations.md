@@ -115,6 +115,10 @@ The metadata data format may be used in a number of places. When the metadata is
 		country: 'NO',
 		geo: [{lat: 63.4171494, lon: 10.40447}],
 		
+		oauth.endpoints.authorization: 'https://foodl.org/oauth/auth',
+		oauth.endpoints.token:  'https://foodl.org/oauth/token',
+		federation.endpoints.association:  'https://foodl.org/oauth/assoc'
+		
 	}
 
 
