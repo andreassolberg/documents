@@ -102,11 +102,11 @@ The metadata data format may be used in a number of places. When the metadata is
 -->
 
 
-**Additional Federation stuff**
 
 
 
-Example metadata:
+
+**Example metadata:**
 
 	{
 		title: 'Norwegian University of Science and Technology',
@@ -151,7 +151,7 @@ Example metadata:
 : A list of supported algorithms. 
 
 
-Example metadata:
+**Example metadata:**
 
 	{
 		title: 'Foodle',
