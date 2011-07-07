@@ -21,13 +21,16 @@ Useful references:
 * OAuth 2.0: <http://tools.ietf.org/html/draft-ietf-oauth-v2>
 
 
-[OpenID Connect Discovery]: http://openidconnect.com/#discovery
+
 [WebFinger]: http://hueniverse.com/2009/08/introducing-webfinger/
 [JRD]: http://hueniverse.com/2010/05/jrd-the-other-resource-descriptor/
 [JSON Simple Sign]: http://jsonenc.info/jss/1.0/
 [host-meta]: http://hueniverse.com/2009/11/host-meta-aka-site-meta-and-well-known-uris/
 [Magic Signatures]: http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html
+[Magic JSON Envelope]: http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html#anchor5
 
+[OpenID Connect Discovery]: http://openidconnect.com/#discovery
+[OpenID Connect Response]: http://openidconnect.com/#response
 
 
 ## Terminology
@@ -84,6 +87,12 @@ The following properties may be associated with the Identity Provider:
 `federation.endpoints.association`
 : The association endpoint, for getting a temporary consumer key/secret. Discussed later.
 
+`federation.domains`
+: A list of domains that this Provider is allowed to assert user information about. The consumer will match this list with the `domain` property in the [OpenID Connect Response][].
+
+`federation.loa`
+: A list of Level of Assurance profiles that this provider fulfills according to the federation third party. Each level is indentified by a URI.
+
 
 <!-- 
 
@@ -117,7 +126,9 @@ The metadata data format may be used in a number of places. When the metadata is
 		
 		oauth.endpoints.authorization: 'https://foodl.org/oauth/auth',
 		oauth.endpoints.token:  'https://foodl.org/oauth/token',
-		federation.endpoints.association:  'https://foodl.org/oauth/assoc'
+		federation.endpoints.association:  'https://foodl.org/oauth/assoc',
+		federation.domains: ['ntnu.no'],
+		federation.loa: ['urn:oasis:names:tc:SAML:2.0:post:ac:classes:nist-800-63:v1-0-2:2']
 		
 	}
 
@@ -178,7 +189,7 @@ The metadata data format may be used in a number of places. When the metadata is
 : Title of the circle of trust. For easier reckognition in logs and configuration. 
 
 `federation.public_key`
-: A list of public keys for the Federation operator. Should be represented using *The Magic Envelope Compact Serialization* [Magic Signatures][].
+: A list of public keys for the Federation operator. Should be represented using *The Magic Envelope Compact Serialization* [[Magic Signatures][]].
 
 `federation.supported_algs`
 : A list of supported algorithms.
@@ -199,7 +210,7 @@ Example:
 		federation.public_key: [
 			'RSA.mVgY8RN6URBTstndvmUUPb4UZTdwvwmddSKE5z_jvKUEK6yk1u3rrC9yN8k6FilGj9K0eeUPe2hf4Pj-5CmHww.AQAB',
 		],
-		federation.public_key: [
+		federation.supported_algs: [
 			'RSA-SHA256', 'RSA-SHA1'
 		]
 	}
@@ -216,7 +227,7 @@ To establish a federation, there will be created two documents:
 
 served over plain HTTP on each endpoint.
 
-Each document is a list of Service Provider (or Identity Provider respectivey) metadata objects wrapped in a metadata container, and signed using [JSON Simple Sign][].
+Each document is a list of Service Provider (or Identity Provider respectivey) metadata objects wrapped in a metadata container, and signed using [[Magic Signatures][]].
 
 The metadata container looks like this:
 
@@ -246,20 +257,18 @@ The properties are:
 : A list of Service Provider metadata objects or Identity Provider metadata objects.
 
 
-After the document is signed document may look like this:
+After the document is signed and wrapped in a [Magic JSON Envelope][] is may look like this:
 
 	{
-		"data": "afb98af7b87af687f6876ba87f687a5b76a5..."
-		"alg": "RSA-SHA256",
-		"sigs": [{
+		data: "afb98af7b87af687f6876ba87f687a5b76a5..."
+		data_type: "application/json",
+		encoding: "base64url",
+		alg: "RSA-SHA256",
+		sigs: [{
 			value: "EvGSD2vi8qYcveHnb-rrlok07qnCXjn8YSeCDDXlbhILSabgvNsPpbe76up8w63i2fWHvLKJzeGLKfyHg8ZomQ",
 			keyhash: "4k8ikoyC2Xh+8BiIeQ+ob7Hcd2J7/Vj3uM61dy9iRMI="
 		}]
 	}
-
-TODO: The example above is not correct; should be updated to reflect [JSON Simple Sign][] if we end up using that.
-
-
 
 
 
@@ -280,7 +289,7 @@ The provider then tries to match the `redirect_uri` from the `oauth.endpoints.re
 
 TODO: Consider add more parameters to the request; in example request for attribute profiles etc, level of assurance (if the IdP in example support 2-factor).
 
-TODO: Discuss with the OpenID Connect folks how this message can be signed in the best way. If the request is made as query string parameters, then HTTP-REDIRECT type signatures can be used. If the message is sent in the body as `application/x-www-form-urlencoded` then how should we sign it? Here I have proposed to send the request body JSON encoded instead, and then use [JSON simple Sign][] for the signature.
+TODO: Discuss with the OpenID Connect spec writers how this message can be signed in the best way. If the request is made as query string parameters, then HTTP-REDIRECT type signatures can be used. If the message is sent in the body as `application/x-www-form-urlencoded` then how should we sign it? Here I have proposed to send the request body JSON encoded instead, and then use [Magic Signatures][] for the signature.
 
 If the signature was valid, and the provider trust the consumer, the provider will respond with a new consumer key / secret pair, like this:
 
