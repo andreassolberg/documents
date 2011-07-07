@@ -294,6 +294,14 @@ After the document is signed and wrapped in a [Magic JSON Envelope][] is may loo
 
 
 
+### Configuring a Service Provider or Identity Provider to the Federation
+
+First of all, there is a policy route for the entity to join the Federation, which ends up in the entity being exposed in the Federation metadata document discussed above.
+
+Further the entity would need to be configured to regurlarly fetch the *Federation Metadata* and validate the signature.
+
+
+
 ## Dynamic Association
 
 The consumer sends a POST request to the `federation.endpoints.association` endpoint in the Identity Provider metadata.
