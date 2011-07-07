@@ -9,20 +9,14 @@ This document is currently just some notes, thinking loud about the possibility 
 The reason why I even bother to think about this is that I think it is really pity that Federations and the OpenID community is two split worlds. The users (Service Providers) are the ones that are hurt by this, and I don't like that. If there is only a slight possibility that these worlds could meet, I think it is worth exploring.
 
 
-**THIS DOCUMENT IS A MESS. It is work in progress**
-
-
-*Disclaimer: My experiences from the OpenID and OAuth world are limited. Writing this document is my way of getting to know the OpenID Connect idea better.*
-
-
 Useful references:
 
 * OpenID Connect: <http://openidconnect.com/>
 * OAuth 2.0: <http://tools.ietf.org/html/draft-ietf-oauth-v2>
 
 
-
 [WebFinger]: http://hueniverse.com/2009/08/introducing-webfinger/
+[XRD]: http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html
 [JRD]: http://hueniverse.com/2010/05/jrd-the-other-resource-descriptor/
 [JSON Simple Sign]: http://jsonenc.info/jss/1.0/
 [host-meta]: http://hueniverse.com/2009/11/host-meta-aka-site-meta-and-well-known-uris/
@@ -37,15 +31,18 @@ Useful references:
 
 I use the Service Provider and Identity Provider terms from the *federation world* on purpose.
 
+## Features
+
+OpenID Connect Federations adds a layer on top of OpenID Connect.
 
 
 ## Metadata
 
-Examples given in the following sections shows metadata for a single entity. Usually metadata is presented in a list.
+Examples given in the following sections shows metadata for a single entity. A complete metadata document will usually be represented as a list of entity metadata for eigther Identity Providers or Consumers, wrapped in a Metadata Container. Metadata is always represented in a JSON object.
 
-Metadata is represented in a simple JSON object.
+The Metadata Container is discussed in the *Federation Trust* section.
 
-TODO: Consider wrap the metadata in [JRD][].
+*TODO: Consider wrap the metadata in [XRD][] / [JRD][].*
 
 
 
@@ -81,11 +78,17 @@ The following properties may be associated with the Identity Provider:
 `oauth.endpoints.token`
 : OAuth Token Endpoint
 
+**OpenID Connect information**
+
+`connect.endpoints.association`
+: The association endpoint, for getting a temporary consumer key/secret. Discussed later.
+
+`connect.endpoints.userinformation`
+: The user information endpoint as described in [OpenID Connect][].
+
 
 **Federation properties**
 
-`federation.endpoints.association`
-: The association endpoint, for getting a temporary consumer key/secret. Discussed later.
 
 `federation.domains`
 : A list of domains that this Provider is allowed to assert user information about. The consumer will match this list with the `domain` property in the [OpenID Connect Response][].
@@ -93,6 +96,8 @@ The following properties may be associated with the Identity Provider:
 `federation.loa`
 : A list of Level of Assurance profiles that this provider fulfills according to the federation third party. Each level is indentified by a URI.
 
+`federation.endpoints.globallogout`
+: The global logout endpoint, accepting logout requests as described in the section *Global Logout*
 
 <!-- 
 
@@ -114,7 +119,6 @@ The metadata data format may be used in a number of places. When the metadata is
 
 
 
-
 **Example metadata:**
 
 	{
@@ -124,11 +128,13 @@ The metadata data format may be used in a number of places. When the metadata is
 		country: 'NO',
 		geo: [{lat: 63.4171494, lon: 10.40447}],
 		
-		oauth.endpoints.authorization: 'https://foodl.org/oauth/auth',
-		oauth.endpoints.token:  'https://foodl.org/oauth/token',
-		federation.endpoints.association:  'https://foodl.org/oauth/assoc',
+		oauth.endpoints.authorization: 'https://ntnu.no/oauth/auth',
+		oauth.endpoints.token:  'https://ntnu.no/oauth/token',
+		connect.endpoints.association:  'https://ntnu.no/oauth/assoc',
+		connect.endpoints.userinformation:  'https://ntnu.no/oauth/userinfo',
 		federation.domains: ['ntnu.no'],
-		federation.loa: ['urn:oasis:names:tc:SAML:2.0:post:ac:classes:nist-800-63:v1-0-2:2']
+		federation.loa: ['urn:oasis:names:tc:SAML:2.0:post:ac:classes:nist-800-63:v1-0-2:2'],
+		federation.endpoints.globallogout: 'https://ntnu.no/oauth/logout'
 		
 	}
 
@@ -165,6 +171,11 @@ The metadata data format may be used in a number of places. When the metadata is
 `federation.supported_algs`
 : A list of supported algorithms. 
 
+`federation.requested_attributes`
+: A list of attributes that the consumer would like to have to function normally.
+
+`federation.endpoints.globallogout`
+: The global logout endpoint, accepting logout requests as described in the section *Global Logout*
 
 **Example metadata:**
 
@@ -178,7 +189,11 @@ The metadata data format may be used in a number of places. When the metadata is
 		].
 		federation.public_key: [
 			'RSA-SHA256', 'RSA-SHA1'
-		]
+		],
+		federation.requested_attributes: [
+			'user_id', 'email', 'display_name', 'edu_eduPersonAffiliation', 'edu_norEduOrgAcronym'
+		],
+		federation.endpoints.globallogout: 'https://foodl.org/oauth/logout'
 	}
 
 
@@ -227,9 +242,9 @@ To establish a federation, there will be created two documents:
 
 served over plain HTTP on each endpoint.
 
-Each document is a list of Service Provider (or Identity Provider respectivey) metadata objects wrapped in a metadata container, and signed using [[Magic Signatures][]].
+Each document is a list of Service Provider (or Identity Provider respectivey) metadata objects wrapped in a *Metadata Container*, and signed using [[Magic Signatures][]].
 
-The metadata container looks like this:
+The Metadata Container looks like this:
 
 	{
 		'expires': 1309945835,
@@ -276,7 +291,21 @@ After the document is signed and wrapped in a [Magic JSON Envelope][] is may loo
 
 The consumer sends a POST request to the `federation.endpoints.association` endpoint in the Identity Provider metadata.
 
-The body of the request will be a Dynamic Assocation Request encoded in JSON and signed using JSON Simple Sign, using the key associated with one of the public keys listed in the metadata of the consumer.
+The body of the request will be a Dynamic Assocation Request encoded in JSON and signed using [Magic Signatures][], using the key associated with one of the public keys listed in the metadata of the consumer.
+
+The request MUST contain the following properties:
+
+`type`
+: This property MUST be set to `client_associate`.
+
+`redirection_url`
+: This value MUST match the `oauth.endpoints.redirection` in the consumer metadata.
+
+Here are some additional properties that may be added
+
+`federation.loa`
+: This property is optional, and may be useful if the provider offers more than one loa value in the provider metadata. The provider may use this to select authentication methods with the user. The value may in example influence whether the user will need to use two-factor authentication or not.
+
 
 Here is an example of the `Dynamic Association Request`:
 
@@ -285,11 +314,11 @@ Here is an example of the `Dynamic Association Request`:
 		redirect_uri: 'https%3A%2F%2Ffoodl.org%2Foauth%2Fcallback'
 	}
 
+**NOTE: This proposal involves using an `application/json` type of the request body. The current OpenID Connect spec differs by using `application/x-www-form-urlencoded`.**
+
+
 The provider then tries to match the `redirect_uri` from the `oauth.endpoints.redirection` properties found in the trusted consumer metadata.
 
-TODO: Consider add more parameters to the request; in example request for attribute profiles etc, level of assurance (if the IdP in example support 2-factor).
-
-TODO: Discuss with the OpenID Connect spec writers how this message can be signed in the best way. If the request is made as query string parameters, then HTTP-REDIRECT type signatures can be used. If the message is sent in the body as `application/x-www-form-urlencoded` then how should we sign it? Here I have proposed to send the request body JSON encoded instead, and then use [Magic Signatures][] for the signature.
 
 If the signature was valid, and the provider trust the consumer, the provider will respond with a new consumer key / secret pair, like this:
 
@@ -298,12 +327,57 @@ If the signature was valid, and the provider trust the consumer, the provider wi
 		client_secret: 'key',
 		expires_in: 3600,
 		flows_supported: ['web_server', 'user_agent'],
-		user_endpoint_url: '',
+		user_endpoint_url: 'https://foodl.org/oauth/callback',
+	}
+
+In some cases the Provider trusts the consumer, but is not willling to release all the attributes requested in the consumer metadata. If this is the situation and the provider will still release at least one of the requested attributes, the provider MUST return this additional property in the response:
+
+`attributes`
+: A list of attributes that the provider will release to the provider. This will be a subset of the attributes in consumer metadata.
+
+If the `attributes` property of the response is not present, the consumer can expect all the requested attributes to be released.
+
+If the Provider does not accept the Service Provider sufficiently to allow users to login, it should fail at this point, returning an error instead:
+
+	{
+		'error_type': 'noaccess',
+		'error_descr': 'The provider is awaiting the Identity Provider operators to manually and explicitly opt-in for access to this consumer. This consumer was discovered in metadata 9 days ago, if you have questions about the acceptance procedures for new consumers, contact federation-helpdesk@ntnu.no'
 	}
 
 
 
 
+
+## Global Logout
+
+A global logout endpoint will be able to process a HTTP GET request with the following query string parameters:
+
+`consumer_key`
+: The consumer_key that needs to be invalidated.
+
+The endpoint MUST then return a status JSON object like this:
+
+	{
+		status-self: 'ok',
+		status-propagation: 'na'
+	}
+
+There are two properties that always MUST be present in the respnose:
+
+`status-self`
+: Did the owner of the global logout endpoint successfully managed to logout the user (invalidate the consumer key).
+
+`status-propagation`
+: If the target has derived the session from another party, or is the authorative source of the session for other parties, the target should try to propagate the logout to those external parties. This property indicate whether that was successfull or not. A value of `ok` means that all external parties returned success, a value of `partial` means that at least one of the external parties returned success but not all, and `fail` means that none of the external parties did not return success. `na` means that the target have not associated the local session with any external parties (except from association with the requestor).
+
+If the provider wants to include a more descriptive error message in the response it may include an `error_descr` property with a human readable error message.
+
+Both consumers and providers should have global logout endpoints. If a consumer or provider does not properly support global logout as described in this section, the entity MUST NOT include a global logout endpoint in the metadata.
+
+The global logout endpoint MUST NOT require cookies to be present; allowing an entity to enforce logout using a backchannel HTTP call.
+
+
+<!-- 
 
 ## Notes
 
@@ -331,7 +405,7 @@ Important:
 * Central component needs to be super light weight.
 
 
-
+-->
 
 
 
