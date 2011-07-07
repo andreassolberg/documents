@@ -347,7 +347,10 @@ If the Provider does not accept the Service Provider sufficiently to allow users
 
 	{
 		'error_type': 'noaccess',
-		'error_descr': 'The provider is awaiting the Identity Provider operators to manually and explicitly opt-in for access to this consumer. This consumer was discovered in metadata 9 days ago, if you have questions about the acceptance procedures for new consumers, contact federation-helpdesk@ntnu.no'
+		'error_descr': 'The provider is awaiting the Identity Provider operators to \
+manually and explicitly opt-in for access to this consumer. This consumer was discovered \
+in metadata 9 days ago, if you have questions about the acceptance procedures for new \
+consumers, contact federation-helpdesk@ntnu.no'
 	}
 
 
