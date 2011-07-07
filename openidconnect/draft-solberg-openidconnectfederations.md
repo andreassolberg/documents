@@ -27,6 +27,9 @@ Useful references:
 [OpenID Connect Response]: http://openidconnect.com/#response
 
 
+<!-- {{TOC}} -->
+
+
 ## Terminology
 
 I use the Service Provider and Identity Provider terms from the *federation world* on purpose.
