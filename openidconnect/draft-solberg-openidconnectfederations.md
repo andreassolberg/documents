@@ -1,12 +1,18 @@
 # OpenID Connect Federations
 
-* Identifier: draft-solberg-openidconnectfederations
+* Identifier: `draft-solberg-openidconnectfederations`
 * Editor: Andreas Åkre Solberg, UNINETT AS, <mailto:andreas.solberg@uninett.no>
 * Version 0.1. *Last edited July 6th 2011.*
 
-This document is currently just some notes, thinking loud about the possibility of building a federation on top of OpenID Connect. If it turns out to be a good idea, these notes may migrate into a spec.
 
-The reason why I even bother to think about this is that I think it is really pity that Federations and the OpenID community is two split worlds. The users (Service Providers) are the ones that are hurt by this, and I don't like that. If there is only a slight possibility that these worlds could meet, I think it is worth exploring.
+
+This document describes a layer on top of *[OpenID Connect][]* adding the functionality of SAML Identity Federations that is lacking in the OpenID suite. And in addition adds some things that have been nice to have, but that we don't have in SAML federations. We introduce Circle of Trust (Federation), third party asserting list of trusted entities, Metadata, Level of Assurance, Attribute Release Negotiation, signing using assymetric keys and Global Logout. 
+
+> It is a pity that the OpenID and SAML worlds are split. The ones suffering from this is both Service Providers and Identity Providers. The idea behind this document is adding a layer on OpenID Connect that will make a Service Providers seamlessly integrate with a combination of OpenID providers and trusted providers.
+
+> Can *OpenID Connect Federations* replace SAML? 
+>
+> * May be – that is what I am exploring. There is no simple answer :)
 
 
 Useful references:
@@ -23,6 +29,7 @@ Useful references:
 [Magic Signatures]: http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html
 [Magic JSON Envelope]: http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html#anchor5
 
+[OpenID Connect]: http://openidconnect.com
 [OpenID Connect Discovery]: http://openidconnect.com/#discovery
 [OpenID Connect Response]: http://openidconnect.com/#response
 
@@ -359,6 +366,7 @@ If the Provider does not accept the Service Provider sufficiently to allow users
 
 
 ## Global Logout
+
 
 A global logout endpoint will be able to process a HTTP GET request with the following query string parameters:
 
