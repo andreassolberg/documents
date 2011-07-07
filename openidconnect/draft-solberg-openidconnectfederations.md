@@ -214,7 +214,7 @@ The metadata data format may be used in a number of places. When the metadata is
 : A list of public keys for the Federation operator. Should be represented using *The Magic Envelope Compact Serialization* [[Magic Signatures][]].
 
 `federation.supported_algs`
-: A list of supported algorithms.
+: A list of algorithms that the consumer of the metadata feed is expected to support.
 
 `endpoint.trusted-providers`
 : An endpoint listing trusted Identity Providers.
