@@ -31,9 +31,6 @@ Useful references:
 
 I use the Service Provider and Identity Provider terms from the *federation world* on purpose.
 
-## Features
-
-OpenID Connect Federations adds a layer on top of OpenID Connect.
 
 
 ## Metadata
@@ -349,16 +346,6 @@ If the Provider does not accept the Service Provider sufficiently to allow users
 		'error_type': 'noaccess',
 		'error_descr': 'The provider is awaiting the Identity Provider operators to manually and explicitly opt-in for access to this consumer. This consumer was discovered in metadata 9 days ago, if you have questions about the acceptance procedures for new consumers, contact federation-helpdesk@ntnu.no'
 	}
-
-
-## Making an OpenID Connect request
-
-In addition to the request parameters described in [OpenID Connect][] the Consumer should add a query string parameter `sign=true`. If the Identity Provider supports OpenID Connect Federations, it MUST support signing the 
-
-## Receiving an OpenID Connect Federations response
-
-
-
 
 
 
