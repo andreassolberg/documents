@@ -2,7 +2,7 @@
 
 Author: Andreas Åkre Solberg, andreas.solberg@uninett.no http://rnd.feide.no
 
-*DICLAIMER: Only brainstorming at this point. Not even close to a draft.*
+*DICLAIMER: Only brainstorming at this point. Not even close to a draft. I would expect there are security issues with the current text that needs to be addressed.*
 
 This specification defines a way to automate the registration of clients at the Provider, and a way for the provider and consumer to automatically refresh the metadata about the other party.
 
