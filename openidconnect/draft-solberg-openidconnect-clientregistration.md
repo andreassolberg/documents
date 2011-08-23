@@ -149,7 +149,7 @@ And response:
 
 The Provider now contacts the `metadata_url` in the connect request, and verifies the signature against the trust information exchanged in the `associate` request.
 
-
+This step usually goes after the Step 3 request is sent and before the step 3 response is sent. TBD: restructure.
 
 
 
