@@ -46,6 +46,8 @@ The client uses the *Metadata Refresh Service* Endpoint to obtain metadata about
 *This step may be replaced with a more manual procedure if appropriate for better verification.*
 
 
+
+
 ## Step 2: Client associates the client ID and credentials
 
 
@@ -58,7 +60,7 @@ The associate request is a HTTPS GET request with the following parameters:
 
 * `action` - The value MUST be `associate` - REQUIRED
 * `client_id` - The requested client_id of the  - REQUIRED
-* `alg` - Select one of the supported algorithm for signing messages, selected from the `crypto/supported_algs` list in the provider metadata.
+* `alg` - Select one of the supported algorithm for signing messages, selected from the `crypto/supported_algs` list in the provider metadata. - REQUIRED
 
 Depending on the `alg` parameter value, additional parameters may be provided.
 
@@ -72,12 +74,13 @@ with the content type of `application/json`
 
 Example request:
 
-	GET /provider/register?client_id=https%3A%2F%2Fconsumer.example.org&alg=HS256 HTTP/1.1
+	GET /provider/register?action=associate&client_id=https%3A%2F%2Fconsumer.example.org&alg=HS256 HTTP/1.1
 	Host: provider.example.org
 	Accept: application/json
 
 And response:
 
+	HTTP 200 OK
 	Content-Type: application/json
 	
 	{'connect_code': '238476238746238746238746283746', 'secret': '2189763287468A2934792374BF23847D2'}
@@ -98,22 +101,48 @@ If the alg is set to one of `rsa...`, the association request MUST include the f
 
 ## Step 3: The Client connects to the provider, by providing its metadata
 
-The client sends a `connect` request to the provider, a HTTPS GET request to the registration endpoint, including the following parameters:
+The client sends a `connect` request to the provider, by redirecting the user that registers the service to the registration endpoint with the following parameters:
 
 * `action` - The value MUST be `connect` - REQUIRED
 * `client_id` - The requested client_id of the  - REQUIRED
 * `connect_code` - The code (secret) obtain in the *association* phase. - REQUIRED
 * `metadata_url` - Select one of the supported algorithm for signing messages, selected from the `crypto/supported_algs` list in the provider metadata. - REQUIRED
+* `redirect_url` - Where to send the user back after connecting (if done via a front-channel redirect)
 
-Sending a `connect` request MAY be done to push the Provider to refresh its metadata. But if the Provider already has connected to the Consumer, the Provider MUST never allow the metadata URL to be replaced by this request.
-
-If the association was succcessful, the Provider returns a response with the HTTP status code of 200. The provider should then return a response object:
+In some situations the provider may accept this request to be sent backchannel without a end user registering the service. In that case the `redirect_url` should not be provided, and the Provider returns a response with the HTTP status code of 200. The provider should then return a response object:
 
 	{
 		'client_id': 'https://consumer.example.org'
 	}
 
-with the content type of `application/json`
+with the content type of `application/json`.
+
+
+If the `redirect_url` was present, the Provider MAY authenticate, verify and ask for confirmation of the connect between the service and the provier.
+
+The Provider returns a successfull response, by redirecting the user back to the `redirect_url` with the following parameters:
+
+* `iss`: The Provider ID
+* `connect`: The value is set to `ok`.
+
+Sending a `connect` request MAY be done to push the Provider to refresh its metadata (back-channel). But if the Provider already has connected to the Consumer, the Provider MUST never allow the metadata URL to be replaced by this request.
+
+
+An example front-channel connect request:
+
+	GET /provider/register?
+		action=connect&
+		client_id=https%3A%2F%2Fconsumer.example.org&
+		connect_code=238476238746238746238746283746&
+		metadata_url=https%3A%2F%2Fconsumer.example.org%2Fmetadata&
+		redirect_url&https%3A%2F%2Fconsumer.example.org%2Fcallback
+	Host: provider.example.org
+	Accept: application/json
+
+And response:
+
+	HTTP 302 Redirect
+	Location: https://consumer.example.org/callback?connect=ok&iss=https%3A%2F%2Fprovider.example.org
 
 
 ## Step 4: Provider obtains Consumer metadata
