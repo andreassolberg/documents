@@ -1,0 +1,165 @@
+Comparison InCommon profile and saml2int
+========================================
+
+Metadata
+--------
+
+saml2int is very limited on metadata, only refers to metadata interoperability profile.
+
+InCommon includes incommon specific requirements on content of metadata, and how and how often to publish.
+
+InCommon contains this generic parts that could be adopted to saml2int:
+
+  * Info on encryption keys when not TLS/SSL on ACS.
+  * Requirements on content:
+	* Supported NameIDs
+	* Requested attributes
+  * Discovery response location
+
+Name identifiers
+----------------
+
+Separate section on InCommon.
+
+Text is reasonable. Substance is equivalent to saml2int as far as I can see.
+
+Attributes
+----------
+
+Reccommandation on using simple text attribute values is generic and could easily be adopted in saml2int.
+
+MACE-Dir references are edu-specific, may be left out of saml2int. and added in incommon profile.
+
+
+Attributes and the use of uri format:
+
+  * incommon: MUST use URI format
+  * saml2int: SHOULD use URI format
+
+
+
+
+Authentication Request
+----------------------
+
+AuthNRequest MUST be sent using HTTP-REDIRECT.
+
+  * Equivalent
+
+Regarding signing of request.
+
+  * Similar, but I prefer the InCommon way of expressing it. Will adopt for saml2int.
+
+Regarding secure endpoints for SSO endpoint:
+
+  * InCommon: SHOULD be protected by SSL
+  * saml2int: does not mention.
+  * OK to adopt incommon
+
+AuthNRequest MUST include assertioconsumerurl
+
+  * Equivalent
+  * saml2int says MUST be checked towards metadata
+
+
+Protocolbinding set to HTTP-POST or omitted
+
+  * Equivalent
+
+AuthNRequest MUST not contain subject.
+
+  * Equivalent
+
+
+AuthNRequest + Conditions
+
+  * saml2int: MUST NOT be included
+  * incommon: do not specify
+
+
+AuthNRequest and Conditions element
+
+  * Not mentioned in IncOmmon
+  * saml2int: MUST not contain Conditions
+
+Scoping element
+
+  * Similar...
+  * InCommon: SHOULD NOT contain scoping
+  * saml2int: IdP MUST provide reasonable user experience when element is left out...
+
+NameID Policy should be inclued and allowcreate = true
+
+  * Equivalent
+
+NameID Format in request:
+
+  * Equivalent
+ 
+RequestedAuthnContext:
+
+  * InCommon: may be included, but should only be used when arrangement between sp and idp. Info on comparison.
+  * saml2int: should not be used
+  * adopt incommon text, which is better.
+
+Response
+--------
+
+response MUST be sent using HTTP-POST
+
+  * Equivalent
+
+Securing ACS endpoint, SHOULD be TLS/SSL. Encryption of response.
+
+  * Similar.
+  * If the ACS is not secured: InCommon says SHOULD encrypt. saml2int says MUST encrypt.
+  * saml2int also specifies that the page containing the `<form>` included the response at the IdP MUST be protected if the content is not encrypted.
+  * saml2int has text explaining that having a keydescriptor without use or with use = encryption is a way of telling that it supports decrypting assertions.
+
+Response MUST include Issuer:
+
+  * mentioned in saml2int  only
+
+
+SP MUST support unsolicited response
+
+  * Equivalent
+
+About the number of asserions, statements etc:
+
+  * Similar
+
+Inclusion of a NameID element in subject in the response
+
+  * incommon: shuold be included
+  * saml2int: MUST be included
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

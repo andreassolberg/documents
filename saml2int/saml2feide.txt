@@ -1,0 +1,76 @@
+SAML 2.0 Usage in Feide
+=======================
+
+This document is a normative description of how SAML 2.0 should be used in the norwegian educational federation [Feide][feide].
+
+  * `$Id: saml2feide.txt 73 2009-07-10 12:10:29Z andreas $`
+
+Requirements notation
+---------------------
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][].
+
+
+How to use SAML 2.0 in Feide
+----------------------------
+
+In Feide the SAML 2.0 protocol is used for Single Sign On and Single Logout. The SAML 2.0 specification is used as specified in [saml2-profiles][], [saml2-core][] and [saml2-bindings][].
+
+Feide entities MUST follow the following deployment profiles. A deployment profiles limits what bindings can be used, and in general make decisions on how to do things in SAML 2.0 where there is more than one way of doing it.
+
+* [The Interoperable SAML 2.0 Metadata Profile][saml2-metadata-profile] specifies the format of the SAML 2.0 Metadata documents that is exchanged between Feide entities and the Feide organization.
+* [The Interoperable SAML 2.0 WebSSO Deployment Profile][saml2-interoperable-profile] specifies how to use SAML 2.0 with Web SSO.
+* [The Front-Channel Single Logout Deployment Profile][saml2-frontchannel-slo] specifies how to use SAML 2.0 with Single Logout.
+
+All entities MUST support both the Single Sign-On profile and the Single Logout profile.
+
+Additional Requirements
+-----------------------
+
+All entities participating in Feide MUST have all SAML 2.0 endpoints protected by HTTPS/SSL.
+
+The entityID selected by a Service Provider MAY be either a URL or a URN. If using a URL, it must be descriptive of the service and the hostname MUST be owned by the Service Provider operators. If using an URN, it MUST be on the following format:
+
+	urn:mace:feide.no:services:no.institusjon.beskrivendenavnpaatjenesten
+
+Normative References
+--------------------
+
+
+
+* [RFC2119]		[Bradner, S.,Key words for use in RFCs to Indicate Requirement Levels, March 1997.][RFC2119]
+* [saml2-core]	[OASIS, "SAML 2.0 Core".][saml2-core]
+* [saml2-bindings]	[OASIS, "SAML 2.0 Bindings".][saml2-bindings]
+* [saml2-profiles]	[OASIS, "SAML 2.0 Profiles".][saml2-profiles]
+* [saml2-metadata-profile]	[OASIS, "Interoperable SAML 2.0 Metadata Deployment Profile".][saml2-metadata-profile]
+* [saml2-interoperable-profile]		[SAML 2.0 Interoperable WebSSO Deployment Profile][saml2-interoperable-profile]
+* [saml2-frontchannel-slo]	[Front-channel SAML 2.0 Single Logout Deployment Profile][saml2-frontchannel-slo]
+
+
+[feide]: http://feide.no
+[RFC2119]: http://www.ietf.org/rfc/rfc2119.txt
+[saml2-core]: http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf
+[saml2-bindings]: http://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf
+[saml2-profiles]: http://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf
+[saml2-metadata-profile]: http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf
+[saml2-interoperable-profile]: http://saml2int.org/profile/current
+[saml2-frontchannel-slo]: https://rnd.feide.no/content/front-channel-single-logout-deployment-profile
+
+<!--
+Informative References
+----------------------
+
+
+* [MACE]	[MACE, "MACE: Attribute schemes".][MACE]
+
+[MACE]: http://middleware.internet2.edu/dir/
+
+-->
+
+Authors' addresses
+------------------
+
+
+* Andreas Åkre Solberg, UNINETT, <andreas.solberg@uninett.no>
+
+

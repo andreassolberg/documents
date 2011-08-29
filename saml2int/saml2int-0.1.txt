@@ -1,0 +1,200 @@
+Interoperable SAML 2.0 Web Browser SSO Deployment Profile
+=========================================================
+
+
+This deployment profile of SAML 2.0 Web Browser SSO defines a minimal set of requirements that entities need to support in order to be interoperable.
+
+Service Providers and Identity Providers implementing this profile may interoperate with other entities implementing the same profile, as well as with entities that honor the conformance guidelines of Liberty Alliance for SP, SP-Lite, IdP and IdP-Lite.
+
+  * `$Id: saml2int-0.1.txt 369 2010-08-26 10:32:01Z andreas $`
+  * [Version history](http://svn.rnd.feide.no/log.php?repname=docs&path=%2Ftrunk%2Fsaml2int-0.1.txt&rev=0&isdir=0)
+
+Requirements notation
+---------------------
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][].
+
+
+
+
+Introduction
+------------
+
+This deployment profile of SAML 2.0 Web Browser SSO defines a minimal set of requirements that entities need to support in order to be interoperable. The goals of this profile include:
+
+* Easy implementation that can be based on available SAML libraries.
+* Good support in current available SAML 2.0 software implementations.
+* Minimal effort required to configure entities to support this profile from a default installation.
+* Increased interoperability between SAML 2.0 implementations and deployment environments, thanks to a very limited set of required options.
+
+This profile draws upon operational experience of several SAML-based federations in the higher-education and research community and reflects best current practice of a wide range of deployments involving web single sign-on. The authors believe that this profile has broad applicability outside the scope of education and research.
+
+
+### Interoperability
+
+One of the main goals of this profile is to increase interoperability between deployments, as well as across SAML 2.0 implementations.
+
+Service Providers and Identity Providers implementing this profile may interoperate with other entities implementing the same profile.
+
+
+
+### Specification Scope
+
+The scope of this specification is a SAML 2.0 deployment profile, "Single Sign-On Profile", that limits the options available in SAML 2.0 SSO to increase interoperability between deployments.
+
+
+### References to SAML 2.0 specification
+
+When referring to elements from the SAML 2.0 core specification [saml2-core][], the following syntax is used:
+
+* `<samlp:Protocolelement>` - for elements from the SAML 2.0 Protocol namespace.
+* `<saml:Assertionelement>` - for elements from the SAML 2.0 Assertion namespace.
+
+When referring to elements from the SAML 2.0 metadata specification [saml2-metadata][], the following syntax is used:
+
+* `<samlmd:Metadataelement>`
+
+
+This profile is a normative deployment profile for the SAML 2.0 Web Browser SSO Profile (urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser), as specified in [saml2-profiles][]. Text from [saml2-profiles][], [saml2-core][], [saml2-bindings][] and [saml2-metadata][] is background material, and is not repeated in this document.
+
+
+
+Single Sign-On Profile
+----------------------
+
+
+This deployment profile of SAML 2.0 Single Sign-On (SSO) defines a set of requirements that entities need to support in order to be interoperable with other entities.
+
+
+### SAML 2.0 Metadata
+
+All entities supporting this profile MUST provide SAML 2.0 Metadata following the *SAML V2.0 Metadata Interoperability Profile* [saml2-metadata-profile][] specification.
+
+
+
+### The Authentication Request
+
+The `<samlp:AuthnRequest>` MUST include a `<saml:Issuer>` including the EntityID of the Service Provider.
+
+The `<samlp:AuthnRequest>` MUST NOT include `<saml:Subject>`, `<saml:Conditions>`.
+
+The Identity Provider MUST provide a reasonable user experience when the Service Provider is not including a `<samlp:Scoping>` element. The use of `<samlp:Scoping>` requires the Service Provider to know something about what is behind the Identity Provider, something that may be used in some local environments, but is not reasonable to assume when cross-connecting existing federation.
+
+The Identity Provider MUST interpret `@ForceAuthN="true"`, and return a SAML Error if forced re-authentication is not supported.  The Identity Provider MUST interpret `@IsPassive="true"`, and return a SAML Error if it does not support the passive behavior.
+
+The `<samlp:AuthnRequest>` MUST contain an `<samlp:AssertionConsumerServiceURL>`. The Identity Provider MUST verify that the value of  `<samlp:AssertionConsumerServiceURL>` exactly matches the `<samlmd:AssertionConsumerURL>` in the metadata corresponding to the Service Provider.
+
+To increase the chance of interoperability the `<samlp:AuthnRequest>` SHOULD NOT include a `<samlp:RequestedAuthnContext>` element. The support for different authentication context classes, and the semantics around the different classes may be interpreted differently and may potentially cause interoperability problems. If the `<samlp:RequestedAuthnContext>` is included in the request, the participating entities SHOULD have a already established agreement upon which authentication context classes that are available.
+
+A `<samlp:NameIDPolicy>` element SHOULD be included in the `<samlp:AuthnRequest>` with the `AllowCreate` attribute set to `"true"`.
+
+If the Service Provider includes a `NameIDPolicy@Format` in the `<samlp:AuthnRequest>`, it SHOULD be set to either of:
+
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent.`
+
+The Identity Provider MUST support the transient NameID format.
+
+The `<samlp:AuthnRequest>` issued by the Service Provider MUST be sent to the Identity Provider using the HTTP-REDIRECT binding.
+
+The Service Provider SHOULD NOT sign the `<samlp:AuthnRequest>`. If the Service Provider is signing the request, it MUST NOT assume that the Identity Provider is validating the signature unless an explicit agreement is made about doing so.
+
+As this profile only allows the HTTP-POST binding for the `<samlp:Response>`, the `<samlp:AuthnRequest>` MUST either have the `@ProtocolBinding` attribute to be set to `urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST`, or omitted.
+
+
+### The Response
+
+The Service Provider MUST support both unsolicited responses and responses mapped to an `<samlp:AuthnRequest>` .
+
+The `<samlp:Response>` MUST include a `<saml:Issuer>` element as a child to the `<samlp:Response>` element including the EntityID of the Identity Provider.
+
+The `<samlp:Response>` MUST be sent using the HTTP-POST binding [saml2-bindings][].
+
+
+#### The Assertion
+
+If successful, the `<samlp:Response>` MUST contain one `<saml:Assertion>`. The Assertion MUST contain one `<saml:AuthnStatement>` and zero or one `<saml:AttributeStatement>`-s. Each `<saml:AttributeStatement>` MAY contain any number of `<saml:Attribute>`-s, which MAY contain any number of `<saml:AttributeValue>`-s.
+
+The Assertion MUST contain a `<saml:Subject>` and the `<saml:Subject>` MUST contain a `<saml:NameID>`.
+
+If the request did not include a `NameIDPolicy@NameIDFormat` the `NameID@Format` in the response MUST be either of:
+
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`.
+
+The Identity Provider MUST include a `<saml:Conditions>` element. Conditions restricting the period when the assertion is valid, the `@NotBefore` and `@NotOnOrAfter` MUST be included.
+
+`<saml:Attribute>` elements SHOULD carry a NameFormat attribute of `urn:oasis:names:tc:SAML:2.0:attrname-format:uri`. It is RECOMMENDED that the I2MI SAML 2.0 attribute profile [MACE-attributes][] be used.
+
+Encoding attribute values as plain strings is strongly RECOMMENDED. Past experience has shown that using simple strings eases interoperation between different products compared to other encoding methods.
+
+
+#### Encryption of the Response
+
+The content of the Assertion MUST be protected against eavesdropping, either by encrypting the assertion, or by ensuring that the response is sent on a secure transport.
+
+The Service Provider MUST either support decrypting `<saml:EncryptedAssertion>`, or the `AssertionConsumerService` endpoint MUST use a secure transport connection (SSL/HTTPS).
+
+The Identity Provider MUST NOT send an unencrypted Assertion to an unprotected (HTTP) `AssertionConsumerService` endpoint, or present the `<form>` containing the response on an unprotected (HTTP) XHTML/HTML page.
+
+If the Service Provider uses SSL/HTTPS and supports decrypting assertions, the Identity Provider MAY encrypt the assertion. The Service Provider will implicitly indicate to the Identity Provider whether it supports decrypting assertions or not. By including a `<samlmd:KeyDescriptor>` with `use=encryption` or with the `use` attribute left out, the Service Provider indicates that it supports decrypting assertions. If the Service Provider metadata contains no `<samlmd:KeyDescriptor>` at all, or only a `<samlmd:KeyDescriptor>` with `use="signing"` the Service Provider indicates it does not support decrypting assertions.
+
+
+Security Considerations
+-----------------------
+
+As this profile does not require validation of signed authentication request messages, the Service Provider cannot assume that the content of the request has not been tampered with. Consequences of this include:
+
+If the Service Provider included a `<saml:RequestedAuthnContext>` element in the request, it cannot rely on the Identity Provider to honor the requirements. It should only consider the required authentication context as guidance, and instead verify the `<saml:AuthnContext>` provided in the `<samlp:Response>`. This approach also makes it easier to support unsolicited responses.
+
+If the Service Provider requires the user to present a fresh authentication, and sends a request with `ForceAuthn="true"`, it SHOULD verify the `AuthnInstant` attribute in the `Response`.
+
+This profile does not allow an authentication response to be sent unencrypted over the network. Either the `<saml:Assertion>` is encrypted end-to-end, or all endpoints are required to use encrypted transport. When the `<saml:Assertion>` is not encrypted, the content will be exposed in the user's web-browser. The content cannot be tampered with by the user, because the message is signed. However, the user may be able to decode and view attributes sent in the `<samlp:Response>`.
+
+
+
+
+Normative References
+--------------------
+
+
+
+* [RFC2119]					[Bradner, S.,Key words for use in RFCs to Indicate Requirement Levels, March 1997.][RFC2119]
+* [saml2-core]				[OASIS, "SAML 2.0 Core".][saml2-core]
+* [saml2-bindings]			[OASIS, "SAML 2.0 Bindings".][saml2-bindings]
+* [saml2-profiles]			[OASIS, "SAML 2.0 Profiles".][saml2-profiles]
+* [saml2-metadata-profile]	[OASIS, "SAML 2.0 Metadata"][saml2-metadata]
+* [saml2-metadata-profile]	[OASIS, "Interoperable SAML 2.0 Metadata Deployment Profile".][saml2-metadata-profile]
+
+[RFC2119]: http://www.ietf.org/rfc/rfc2119.txt
+[saml2-core]: http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf
+[saml2-bindings]: http://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf
+[saml2-profiles]: http://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf
+[saml2-metadata]: http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf
+[saml2-metadata-profile]: http://docs.oasis-open.org/security/saml/Post2.0/sstc-metadata-iop-cd-01.pdf
+
+
+Informative References
+----------------------
+
+
+* [MACE-attributes]			[MACE, "MACE: Attribute schemes".][MACE-attributes]
+
+[MACE-attributes]: http://middleware.internet2.edu/dir/docs/internet2-mace-dir-saml-attributes-200804.pdf
+
+
+
+Authors' addresses
+------------------
+
+
+* Andreas Åkre Solberg, UNINETT, <mailto:andreas.solberg@uninett.no>
+* Scott Cantor, Ohio State University, <mailto:cantor.2@osu.edu>
+* Eve Maler, Sun Microsystems, <mailto:eve.maler@sun.com>
+* Leif Johansson, Stockholm University, <mailto:leifj@sunet.se>
+* Jeff Hodges, Neustar, <mailto:Jeff.Hodges@neustar.biz>
+* Ian Young, <mailto:ian@iay.org.uk>
+* Nate Klingenstein, <mailto:ndk@internet2.edu>
+* Bob Morgan, <mailto:rlmorgan@washington.edu>
+
+
