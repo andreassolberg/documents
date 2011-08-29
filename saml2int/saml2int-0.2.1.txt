@@ -67,7 +67,9 @@ Entities SHOULD publish its metadata using the Well-Known Location method define
 
 Metadata documents provided by an Identity Provider MUST include an `<md:IDPSSODescriptor>` element containing all necessary `<md:KeyDescriptor>` and `<md:SingleSignOnService>` elements. The metadata SHOULD include one or more `<md:NameIDFormat>` elements indicating which `<saml2:NameID>` Format values are supported.
 
-Metadata documents provided by a Service Provider MUST include an `<md:SPSSODescriptor>` element containing all necessary `<md:KeyDescriptor>` and `<md:AssertionConsumerService>` elements. The metadata SHOULD also include one or more `<md:NameIDFormat>` elements indicating which `<saml2:NameID>` Format values are supported and one or more `<md:AttributeConsumingService>` elements describing the service(s) offered and their attribute requirements.
+Metadata documents provided by a Service Provider MUST include an `<md:SPSSODescriptor>` element containing all necessary `<md:KeyDescriptor>` and `<md:AssertionConsumerService>` elements. The metadata SHOULD also include one or more `<md:NameIDFormat>` elements indicating which `<saml2:NameID>` Format values are supported and one or more `<md:AttributeConsumingService>` elements describing the service(s) offered and their attribute requirements. 
+
+Any `<md:RequestedAttribute>` elements representing attributes to be exchanged using SAML 2.0 MUST have `NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"`.  Additional `<md:RequestedAttribute>` elements MAY be present if they are to be used in other protocols and include appropriate `NameFormat` values.  `NameFormat` MUST NOT be omitted on any `<md:RequestedAttribute>` elements.
 
 Metadata provided by Service Provider SHOULD also contain a descriptive name of the service that the Service Provider represents (not the company) in at least English. It is RECOMMENDED to also provide the name in other languages which is much used in the geographic scope of the deployment. The name should be placed in the `<md:ServiceName>` in the `<md:AttributeConsumingService>` container.
 
