@@ -63,71 +63,73 @@ The test flow definitions are static for each version of the test tool. The test
 ## Test flow output
 
 
-Definition of status values:
+Test flow:
 
-* **0**: Failure
-* **1**: Success
-* **2**: Information
-* **9**: Test flow interrupted. Could not continue to run test because of this problem.
+  * (1) Succeeded
+  * (2) Warning (less significant errors)
+  * (3) Error
+  * (4) Critical
+  * (5) User interaction needed
+  	* With html body + url
 
-Signficiance levels of test status:
+Test item:
 
-* **3**: Signficant fatal error. Operation unlikely to work with any client.
-* **2**: Spec violation; Spec violation and/or security issue.
-* **1**: Warning; less significant, unclear in the spec.
-* **0**: Information: There is no right and wrong in this test, it just informs about behavior of the entity (that might be useful).
+  * (0) Informational
+  * (1) Succeed
+  * (2) Warning (less significant errors)
+  * (3) Error
+  * (4) Critical
 
-The significance levels may be overridden by configuration of various deployment profiles.
 
+A test flow looks like this:
 
 	{
 		id: 'extended-code',
-		
 		// The aggregated status of all the tests in this test flow.
-		// The aggregated status code may only be 0 or 1.
+		status: 1,
+		tests: [...] 
+	}
+
+Test flow properties:
+
+* id: REQUIRED. Unique
+* status: REQUIRED: 
+* tests: An array with test items.
+
+
+Test item properties:
+
+* id: REQUIRED.
+* name: REQUIRED.
+* descr: OPTIONAL.
+* status: REQUIRED.
+
+
+A test looks like this:
+
+	{
+		id: 'connectivity',
+		name: 'Connectivity with the authorization endpoint',
+		status: 1
+	},
+
+A more complex test item:
+
+	{
+		id: 'userdata-content-type',
+		name: 'User Data Endpoint returned correct MIME type in the Content-Type header: application/json',
+		descr: "...",
 		status: 1,
 	
-		tests: [
+		// A reference to the specification may be included. The test UI will be able to include a clickable link to the 
+		// relevant text in the specification.
+		reference: {
+			document: 'oauth',
+			version: 'draft-08',
+			section: '3.2.1.2.3'
+		}
+	},
 		
-			{
-				id: 'connectivity',
-				name: 'Connectivity with the authorization endpoint',
-				status: 1,
-				significance: 3
-			},
-		
-			{
-				id: 'userdata-content-type',
-				name: 'User Data Endpoint returned correct MIME type in the Content-Type header: application/json',
-				status: 1,
-				significance: 2,
-			
-				// A reference to the specification may be included. The test UI will be able to include a clickable link to the 
-				// relevant text in the specification.
-				reference: {
-					document: 'oauth',
-					version: 'draft-08',
-					section: '3.2.1.2.3'
-				}
-			},
-		
-			{
-				id: 'obtained-refresh-token',
-				name: 'Client did not receive a refresh token in the respone from the token endpoint.',
-				status: 0,
-				significance: 0
-			},
-		
-			{
-				id: 'access-token-duration',
-				name: 'The duration of the access token was 3600 seconds',
-				status: 2
-				// Signficance is optional, and does not make sense when status is set to 2.
-			},
-		
-		
-		]
-	}
 
 
 
