@@ -6,6 +6,12 @@
 
 
 
+THIS DOCUMENT IS OLD.
+
+* [Instead go here](https://github.com/andreassolberg/documents/blob/master/openidconnect/draft-solberg-connect-federations.md)
+
+
+
 This document describes a layer on top of *[OpenID Connect][]* adding the functionality of SAML Identity Federations that is lacking in the OpenID suite. And in addition adds some things that have been nice to have, but that we don't have in SAML federations. We introduce Circle of Trust (Federation), third party asserting list of trusted entities, Metadata, Level of Assurance, Attribute Release Negotiation, signing using assymetric keys and Global Logout. 
 
 > It is a pity that the OpenID and SAML worlds are split. The ones suffering from this is both Service Providers and Identity Providers. The idea behind this document is adding a layer on OpenID Connect that will make a Service Providers seamlessly integrate with a combination of OpenID providers and trusted providers.
