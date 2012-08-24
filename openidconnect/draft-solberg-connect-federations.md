@@ -1,5 +1,13 @@
 # OpenID Connect Federations
 
+OpenID Connect does not have built-in mechanisms to support Identity Federations. This document presents some ideas around how to build a federation trust chain for OpenID Connect, to support the Identity Federation use cases.
+
+
+The first typical scenario is to provide a dynamic set of trusted OpenID Connect providers that may be exposed to a specific OpenID Consumer.
+
+The OpenID Consumer first configures a local *Trust Anchor Document*, that refers to specific providers and/or trusted third parties.
+
+
 
 
 
@@ -212,7 +220,6 @@ Providers are limited to only trustworthly provide these attributes:
 			"claims": ["user_id", "name", "email"]
 		}
 	}
-
 
 
 
