@@ -1,7 +1,9 @@
 
 # Persistent UserID Engine
 
-This specifications describes a UserID Engine for combining a set of separate user id namespaces that varies over time into a more persistent user id.
+* The state of this document is **early draft**. 
+
+This specification describes a UserID Engine for combining a set of separate user id namespaces that varies over time into a more persistent user id.
 
 
 
@@ -10,11 +12,11 @@ This specifications describes a UserID Engine for combining a set of separate us
 
 The storage contains a list of objects, each object contains a single *primary key*, and a list of one or more *secondary keys*. Each key is also associated with a timestamp of when the key was created or discovered.
 
-The primary key is always created within this system using the [UUID version 4](http://en.wikipedia.org/wiki/Universally_unique_identifier) specification. Is primary key is random, and unique within this system.
+The primary key is always created within this system using the [UUID version 4](http://en.wikipedia.org/wiki/Universally_unique_identifier) specification. The primary key is chosen with random seed, and is unique within this system.
 
 ## The keys
 
-A key is always represented with a ascii prefix (between 1 and 8 characters long), a colon ':', and then the key value. Each deployment may predefine a set of key types, each with its own prefix. These key types does only have to be defined in the scope of each deployment of the userID engine. Each deployment SHOULD define and document the key types used. Each key type will get its own key namespace, and MUST indepedently have a structure that avoids collision.
+A key is always represented with a ascii prefix (between 1 and 8 characters long), a colon ':', and then the key value. Each deployment may predefine a set of key types, each with its own prefix. These key types do only have to be defined in the scope of each deployment of the userID engine. Each deployment SHOULD define and document the key types used. Each key type will get its own key namespace, and MUST independently have separate mechanisms that avoids collision.
 
 The prefix `uuid` is reserved and used for all primary keys.
 
@@ -49,7 +51,7 @@ The engine also may emit the following events:
 
 ### findOrCreateID and findOrCreateObject
 
-The findOrCreate operations takes a set of one or more keys as input, and returns a userID (primary key).
+The findOrCreate operations take a set of one or more keys as input, and returns a userID (primary key).
 
 findOrCreateID returns the primary key as a string, while findOrCreateObject returns the user id object containing both primary and secondary keys.
 
@@ -138,7 +140,7 @@ One may want to intentionally merge two user objects, and to do this, one basicl
 
 ## Key namespaces which reassigns userIDs
 
-One need to know which key namespaces that reassigns userID. In a students Feide account, `andrs@ntnu.no` is removed once the user leave a university. The university may choose to never reassign this userID to a new user, but it may also choose to keep the userID in carantene for X years. This needs to be well documented, and configured into the userID manager. Reassigning userID is the reason why there always is an attached timestamp with every secondary keys. If a secondary key namespace, such as `feide:` is known to allow reassigning keys after X years, this userID system should be configured to not match secondary keys where the timestamp is not updated within X years.
+One need to know which key namespaces that reassigns userID. In example, a students Feide account, `andrs@ntnu.no` is removed once the user leave a university. The university may choose to never reassign this userID to a new user, but it may also choose to keep the userID in carantene for X years. This needs to be well documented, and configured into the userID manager. Reassigning userID is the reason why there always is an attached timestamp with every secondary key. If a secondary key namespace, such as `feide:` is known to allow reassigning keys after X years, this userID system should be configured to not match secondary keys where the timestamp is not updated within X years.
 
 
 
