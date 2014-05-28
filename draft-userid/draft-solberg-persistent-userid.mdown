@@ -1,0 +1,211 @@
+
+# Persistent UserID Engine
+
+This specifications describes a UserID Engine for combining a set of separate user id namespaces that varies over time into a more persistent user id.
+
+
+
+
+## The storage
+
+The storage contains a list of objects, each object contains a single *primary key*, and a list of one or more *secondary keys*. Each key is also associated with a timestamp of when the key was created or discovered.
+
+The primary key is always created within this system using the [UUID version 4](http://en.wikipedia.org/wiki/Universally_unique_identifier) specification. Is primary key is random, and unique within this system.
+
+## The keys
+
+A key is always represented with a ascii prefix (between 1 and 8 characters long), a colon ':', and then the key value. Each deployment may predefine a set of key types, each with its own prefix. These key types does only have to be defined in the scope of each deployment of the userID engine. Each deployment SHOULD define and document the key types used. Each key type will get its own key namespace, and MUST indepedently have a structure that avoids collision.
+
+The prefix `uuid` is reserved and used for all primary keys.
+
+* Examples of primary keys:
+	* `uuid:7ab85330-dbdb-4e40-823a-bef4107b9d2f`
+	* `uuid:fede49f6-4847-4fdb-aa8b-6b99a02cc4c2`
+	* `uuid:9e30db50-9ad0-4679-8eab-ee007a693068`
+
+Some examples of definition of key types:
+
+* Feide UserID (`feide`). Example: `feide:andreas@uninett.no`
+* Norwegian national identity number (`nnin`). Example: `nnin:10108012345`
+* Duff number (`duff`). Example: `duff:40028012234`
+* Orchid idenfitier (`ochid`). Example: `orchid:0000-0001-7104-8042`
+
+
+
+## The Engine
+
+The engine has the following operations:
+
+* findOrCreateID([ids]) and findOrCreateObject([ids])
+* split(id, id)
+* delete(id)
+
+The engine also may emit the following events:
+
+* merged: callback(newid, [oldids])
+* deleted: callback(key)
+* splitted: callback([keys])
+
+
+### findOrCreateID and findOrCreateObject
+
+The findOrCreate operations takes a set of one or more keys as input, and returns a userID (primary key).
+
+findOrCreateID returns the primary key as a string, while findOrCreateObject returns the user id object containing both primary and secondary keys.
+
+As long as these functions are provided with valid input, **they will always** return a userID. (or possibly throw an exception due to not beeing in operation, not able to reach storage or similar).
+
+For each of the provided keys, the engine will look up matching objects in the storage eigther as primary or secondary keys. The further operation is dependning on whether zero, one or or multiple objects are found in the storage.
+
+*TODO: Write note on updating timestamp on secondary keys*
+
+#### Creating a new object
+
+If **no objects** was found in the storage matching the keys, the engine will create a new object, with the provided keys as secondary keys. The created object will contain a new created [UUID version 4](http://en.wikipedia.org/wiki/Universally_unique_identifier). The system is designed to return this same userID for the same user in subsequent requests even if one or more of the secondary keys are changing.
+
+#### Retuning an existing object
+
+If **one single object** was found when searching using all the provided keys, this object is returned.
+
+If the function is provided with one or more keys that are not yet associated with the current object, these new keys are added as new secondary keys to the object.
+
+
+#### Merging, and returning an object
+
+If **more than one object was found** when searching through all the provided keys, these objects are merged into one. The object with the earliest timestamp for the generation of the uuid will be kept, and the other objects will be merged into this. When merging an object into another, all the secondary keys will be added as new secondary keys, and the primary key is also added as a secondary key.
+
+Example: findOrCreateObject(['feide:andreas@uninett.no', 'nnin:10108012345'])
+
+Assume the following objects are stored:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" }
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." }
+		]}
+
+and
+
+	{ 	"pri": { "id": "uuid:5a2b9871-51e1-49cf-a02a-9f034a00ce57", "ts": "2014-06-02 10:10:08" }
+		"sec": [
+			{ "id": "nnin:10108012345", "ts": "..." }
+		]}
+
+Both these entries will match, and the following updated object will replace the two:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" }
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." },
+			{ "id": "uuid:5a2b9871-51e1-49cf-a02a-9f034a00ce57", "ts": "2014-06-02 10:10:08" },
+			{ "id": "nnin:10108012345", "ts": "..." }
+		]}
+
+When two or more objects are merged, a `merged` event is emitted.
+
+
+### Delete an entry
+
+
+The delete(id) operation takes one single primary key as a parameter, and will remove this object.
+
+### Remove secondary keys
+
+The removeSecondaryKeys(primaryley, [secondarykeys]) operation will remove one or more secondary keys if found on the object represented with the provided primary key.
+
+
+### To merge two UserIDs
+
+One may want to intentionally merge two user objects, and to do this, one basicly use the findOrCreateObject function, either with primary or secondary keys. In example:
+
+* findOrCreateObject(['uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b', 'uuid:5a2b9871-51e1-49cf-a02a-9f034a00ce57'])
+
+
+
+
+
+
+-------
+
+
+
+## Events
+
+* merged: callback(newid, [oldids])
+* deleted: callback(key)
+* splitted: callback([keys])
+
+
+
+
+## Key namespaces which reassigns userIDs
+
+One need to know which key namespaces that reassigns userID. In a students Feide account, `andrs@ntnu.no` is removed once the user leave a university. The university may choose to never reassign this userID to a new user, but it may also choose to keep the userID in carantene for X years. This needs to be well documented, and configured into the userID manager. Reassigning userID is the reason why there always is an attached timestamp with every secondary keys. If a secondary key namespace, such as `feide:` is known to allow reassigning keys after X years, this userID system should be configured to not match secondary keys where the timestamp is not updated within X years.
+
+
+
+
+## Examples
+
+
+First storage is empty.
+
+User log in
+
+	findOrCreate('feide:andreas@uninett.no')
+
+User entry is created in storage:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" },
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." }
+		]}
+
+
+Then a `duff` number is registered on this user:
+
+	findOrCreate('feide:andreas@uninett.no', 'duff:40108012345')
+
+User entry is updated in storage:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" }
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." },
+			{ "id": "duff:40108012345", "ts": "..." }
+		]}
+
+Then the user is updated with a nin:
+
+	findOrCreate('feide:andreas@uninett.no', 'nnin:10108099999')
+
+User entry is updated in storage:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" }
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." },
+			{ "id": "duff:40108012345", "ts": "..." },
+			{ "id": "nnin:10108099999", "ts": "..." }
+		]}
+
+When user now logs in through another system, where only nnin is registed the same userID will be returned:
+
+	findOrCreate('nnin:10108099999')
+
+Now, the same user is registered at another university and assigned a new feide ID:
+
+	findOrCreate('feide:andrs@ntnu.no', 'nnin:10108099999')
+
+User entry is updated in storage:
+
+	{ 	"pri": { "id": "uuid:c9384bda-50df-4a9f-a063-cc0ab7a04a2b", "ts": "2014-05-20 20:30:12" }
+		"sec": [
+			{ "id": "feide:andreas@uninett.no", "ts": "..." },
+			{ "id": "duff:40108012345", "ts": "..." },
+			{ "id": "nnin:10108099999", "ts": "..." },
+			{ "id": "feide:andrs@ntnu.no", "ts": "..." }
+		]}
+
+
+
+
+
+
+
